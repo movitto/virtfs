@@ -122,7 +122,7 @@ class ProtoFS
   def file_writable_real?(p, len)
   end
 
-  def file_new(f, parsed_args)
+  def file_new(f, parsed_args, _open_path, _cwd)
     File.new(self, lookup_file(f), parsed_args)
   end
 

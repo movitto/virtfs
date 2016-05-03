@@ -17,13 +17,13 @@ class ProtoFS
   def dir_mkdir(p, permissions)
   end
 
-  def dir_new(dir, hash_args={})
-    Dir.new(self, lookup_dir(dir), hash_args)
+  def dir_new(fs_rel_path, hash_args, _open_path, _cwd)
+    Dir.new(self, lookup_dir(dir, hash_args), hash_args)
   end
 
   private
 
-  def lookup_dir(dir)
+  def lookup_dir(dir, hash_args)
     #
     # Get filesystem-specific handel for directory instance.
     #
