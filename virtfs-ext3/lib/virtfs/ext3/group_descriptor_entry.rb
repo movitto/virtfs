@@ -1,6 +1,6 @@
 require 'binary_struct'
 
-module Ext3
+module VirtFS::Ext3
   # ////////////////////////////////////////////////////////////////////////////
   # // Data definitions.
 
@@ -19,7 +19,7 @@ module Ext3
   # // Class.
 
   class GroupDescriptorEntry
-    attr_accessor :blockAllocBmp, :inodeAllocBmp
+    attr_accessor :block_alloc_bitmap, :inode_alloc_bitmap
 
     def initialize(buf)
       raise "Ext3::GroupDescriptorEntry.initialize: Nil buffer" if buf.nil?
@@ -31,35 +31,20 @@ module Ext3
     # ////////////////////////////////////////////////////////////////////////////
     # // Class helpers & accessors.
 
-    def blockBmp
+    def block_bmp
       @gde['blk_bmp']
     end
 
-    def inodeBmp
+    def inode_bmp
       @gde['inode_bmp']
     end
 
-    def inodeTable
+    def inode_table
       @gde['inode_table']
     end
 
-    def numDirs
+    def num_dirs
       @gde['num_dirs']
     end
-
-    # ////////////////////////////////////////////////////////////////////////////
-    # // Utility functions.
-
-    # Dump object.
-    def dump
-      out = "\#<#{self.class}:0x#{'%08x' % object_id}>\n"
-      out += "Block bitmap      : 0x#{'%08x' % @gde['blk_bmp']}\n"
-      out += "Inode bitmap      : 0x#{'%08x' % @gde['inode_bmp']}\n"
-      out += "Inode table       : 0x#{'%08x' % @gde['inode_table']}\n"
-      out += "Unallocated blocks: 0x#{'%04x' % @gde['unalloc_blks']}\n"
-      out += "Unallocated inodes: 0x#{'%04x' % @gde['unalloc_inodes']}\n"
-      out += "Num directories   : 0x#{'%04x' % @gde['num_dirs']}\n"
-      out
-    end
-  end
-end
+  end # class GroupDescriptorEntry
+end # module VirtFS::Ext3

@@ -1,4 +1,4 @@
-module Ext3
+module VirtFS::Ext3
   # ////////////////////////////////////////////////////////////////////////////
   # // Data definitions.
 
@@ -19,5 +19,5 @@ module Ext3
     AT_TRUSTED        = 4 # Trusted space attribute.
     AT_LUSTRE         = 5 # Not currently used.
     AT_SECURITY       = 6 # Security space attribute.
-  end
-end
+  end # class ExAttribName
+end # VirtFS::Ext3

@@ -1,7 +1,7 @@
-require 'fs/ext3/directory_entry'
+require_relative 'directory_entry'
 require 'binary_struct'
 
-module Ext3
+module VirtFS::Ext3
   # ////////////////////////////////////////////////////////////////////////////
   # // Data definitions.
 
@@ -110,7 +110,7 @@ module Ext3
       @mode    = @in['file_mode']
       @flags   = @in['flags']
       @length  = @in['size_lo']
-      @length += (@in['size_hi'] << 32) unless self.isDir?
+      @length += (@in['size_hi'] << 32) unless self.dir?
 
       # NOTE: Unpack the direct block pointers separately.
       @blockPointers      = @in['blk_ptrs'].unpack('L12')
@@ -119,7 +119,7 @@ module Ext3
       @tplIndBlockPointer = @in['tpl_ind_ptr']
 
       # If this is a symlnk < 60 bytes, grab the link metadata.
-      if self.isSymLink? && length < SYM_LNK_SIZE
+      if self.symlink? && length < SYM_LNK_SIZE
         @symlnk = buf[SYM_LNK_OFFSET, SYM_LNK_SIZE]
         # rPath is a wildcard. Sometimes they allocate when length < SYM_LNK_SIZE.
         # Analyze each byte of the first block pointer & see if it makes sense as ASCII.
@@ -140,35 +140,35 @@ module Ext3
       (@in['uid_hi'] << 16) | @in['uid_lo']
     end
 
-    def isDir?
+    def dir?
       @mode & FM_DIRECTORY == FM_DIRECTORY
     end
 
-    def isFile?
+    def file?
       @mode & FM_FILE == FM_FILE
     end
 
-    def isDev?
+    def dev?
       @mode & MSK_IS_DEV > 0
     end
 
-    def isSymLink?
+    def symlink?
       @mode & FM_SYM_LNK == FM_SYM_LNK
     end
 
-    def aTime
+    def atime
       Time.at(@in['atime'])
     end
 
-    def cTime
+    def ctime
       Time.at(@in['ctime'])
     end
 
-    def mTime
+    def mtime
       Time.at(@in['mtime'])
     end
 
-    def dTime
+    def dtime
       Time.at(@in['dtime'])
     end
 
@@ -180,49 +180,23 @@ module Ext3
       @in['file_mode'] & (MSK_PERM_OWNER | MSK_PERM_GROUP | MSK_PERM_USER)
     end
 
-    def ownerPermissions
+    def owner_permissions
       @in['file_mode'] & MSK_PERM_OWNER
     end
 
-    def groupPermissions
+    def group_permissions
       @in['file_mode'] & MSK_PERM_GROUP
     end
 
-    def userPermissions
+    def user_permissions
       @in['file_mode'] & MSK_PERM_USER
     end
 
     # ////////////////////////////////////////////////////////////////////////////
     # // Utility functions.
 
-    def fileModeToFileType
+    def file_mode_file_type
       @@FM2FT[@mode & MSK_FILE_MODE]
     end
-
-    def dump
-      out = "\#<#{self.class}:0x#{'%08x' % object_id}>\n"
-      out += "File mode    : 0x#{'%04x' % @in['file_mode']}\n"
-      out += "UID          : #{uid}\n"
-      out += "Size         : #{length}\n"
-      out += "ATime        : #{aTime}\n"
-      out += "CTime        : #{cTime}\n"
-      out += "MTime        : #{mTime}\n"
-      out += "DTime        : #{dTime}\n"
-      out += "GID          : #{gid}\n"
-      out += "Link count   : #{@in['link_count']}\n"
-      out += "Sector count : #{@in['sector_count']}\n"
-      out += "Flags        : 0x#{'%08x' % @in['flags']}\n"
-      out += "Direct block pointers:\n"
-      12.times { |i| p = @blockPointers[i]; out += "  #{i} = 0x#{'%08x' % p}\n" }
-      out += "Sng Indirect : 0x#{'%08x' % @in['ind_ptr']}\n"
-      out += "Dbl Indirect : 0x#{'%08x' % @in['dbl_ind_ptr']}\n"
-      out += "Tpl Indirect : 0x#{'%08x' % @in['tpl_ind_ptr']}\n"
-      out += "Generation   : 0x#{'%08x' % @in['gen_num']}\n"
-      out += "Ext attrib   : 0x#{'%08x' % @in['ext_attrib']}\n"
-      out += "Frag blk adrs: 0x#{'%08x' % @in['frag_blk']}\n"
-      out += "Frag index   : 0x#{'%02x' % @in['frag_idx']}\n"
-      out += "Frag size    : 0x#{'%02x' % @in['frag_siz']}\n"
-      out
-    end
-  end
-end
+  end # class Inode
+end # module VirtFS::Ext3

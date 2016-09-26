@@ -1,51 +1,71 @@
-require 'fs/ext3/file_data'
-require 'fs/ext3/directory_entry'
+require_relative 'file_data'
+require_relative 'directory_entry'
 
-module Ext3
+module VirtFS::Ext3
   class Directory
     ROOT_DIRECTORY = 2
 
-    def initialize(sb, inodeNum = ROOT_DIRECTORY)
-      raise "Ext3::Directory.initialize: Nil superblock"   if sb.nil?
-      raise "Ext3::Directory.initialize: Nil inode number" if inodeNum.nil?
-      @sb = sb; @inodeNum = inodeNum
-      @inodeObj = sb.getInode(inodeNum)
-      @data = FileData.new(@inodeObj, @sb).read
+    def initialize(sb, inode_num = ROOT_DIRECTORY)
+      raise "nil superblock"   if sb.nil?
+      raise "nil inode number" if inode_num.nil?
+      @sb        = sb
+      @inode_num = inode_num
+      @inode_obj = sb.get_inode(inode_num)
+      @data      = sb.ext4? ? @inode_obj.read : FileData.new(@inode_obj, @sb).read
     end
 
-    def globNames
-      @ent_names ||= globEntries.keys.compact.sort
+    def glob_names
+      @ent_names ||= glob_entries.keys.compact.sort
     end
 
-    def findEntry(name, type = nil)
-      return nil unless globEntries.key?(name)
+    def find_entry(name, type = nil)
+      return nil unless glob_entries.key?(name)
 
-      newEnt = @sb.isNewDirEnt?
-      globEntries[name].each do |ent|
-        ent.fileType = @sb.getInode(ent.inode).fileModeToFileType unless newEnt
-        return ent if ent.fileType == type || type.nil?
+      new_entry = @sb.new_dir_entry?
+      glob_entries[name].each do |ent|
+        ent.file_type = @sb.get_inode(ent.inode).file_mode_file_type unless new_entry
+        return ent if ent.file_type == type || type.nil?
       end
       nil
     end
 
     private
 
-    def globEntries
+    def glob_entries
       return @ents_by_name unless @ents_by_name.nil?
 
       @ents_by_name = {}; p = 0
       return @ents_by_name if @data.nil?
-      newEnt = @sb.isNewDirEnt?
+      new_entry = @sb.new_dir_entry?
       loop do
         break if p > @data.length - 4
         break if @data[p, 4].nil?
-        de = DirectoryEntry.new(@data[p..-1], newEnt)
-        raise "Ext3::Directory.globEntries: DirectoryEntry length cannot be 0" if de.len == 0
+        de = DirectoryEntry.new(@data[p..-1], new_entry)
+        raise "DirectoryEntry length cannot be 0" if de.len == 0
         @ents_by_name[de.name] ||= []
         @ents_by_name[de.name] << de
         p += de.len
       end
       @ents_by_name
     end
-  end # class
-end # module
+
+    # If the inode has the IF_HASH_INDEX bit set,
+    # then the first directory block is to be interpreted as the root of an HTree index.
+    def glob_entries_by_hash_tree
+      ents_by_name = {}
+      offset = 0
+      # Chomp fake '.' and '..' directories first
+      2.times do
+        de = DirectoryEntry.new(@data[offset..-1], @sb.new_dir_entry?)
+        ents_by_name[de.name] ||= []
+        ents_by_name[de.name] << de
+        offset += 12
+      end
+
+      header = HashTreeHeader.new(@data[offset..-1])
+      offset += header.length
+      root = HashTreeEntry.new(@data[offset..-1], true)
+      ents_by_name
+    end
+  end # class Directory
+end # module VirtFS::Ext3

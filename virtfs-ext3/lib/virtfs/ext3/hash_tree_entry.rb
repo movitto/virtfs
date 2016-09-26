@@ -1,4 +1,4 @@
-module Ext3
+module VirtFS::Ext3
   # ////////////////////////////////////////////////////////////////////////////
   # // Data definitions.
 
@@ -14,5 +14,23 @@ module Ext3
   ]
 
   class HashTreeEntry
-  end
-end
+    attr_reader :first, :max_descriptors, :cur_descriptors, :node, :min_hash
+
+    def initialize(buf, first = false)
+      raise "nil buffer" if buf.nil?
+
+      @first = first
+
+      if first
+        @hte             = HASH_TREE_ENTRY_FIRST.decode(buf)
+        @max_descriptors = @hte['max_descriptors']
+        @cur_descriptors = @hte['cur_descriptors']
+        @node            = @hte['first_node']
+      else
+        @hte             = HASH_TREE_ENTRY_NEXT.decode(buf)
+        @min_hash        = @hte['min_hash']
+        @node            = @hte['next_node']
+      end
+    end
+  end # class HashTreeEntry
+end # module VirtFS::Ext3

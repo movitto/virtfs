@@ -1,6 +1,6 @@
 require 'binary_struct'
 
-module Ext3
+module VirtFS::Ext3
   # ////////////////////////////////////////////////////////////////////////////
   # // Data definitions.
 
@@ -31,37 +31,42 @@ module Ext3
     FT_SOCKET     = 6
     FT_SYM_LNK    = 7
 
-    attr_reader :inode, :len, :name
-    attr_accessor :fileType
+    attr_reader :len, :name
+
+    attr_accessor :inode, :file_type
 
     def initialize(data, new_entry = true)
-      raise "Ext3::DirectoryEntry.initialize: Nil directory entry data" if data.nil?
-      @isNew = new_entry
+      raise "nil directory entry data" if data.nil?
+      @is_new = new_entry
+
       # Both entries are same size.
-      siz = SIZEOF_DIR_ENTRY_NEW
-      @de = @isNew ? DIR_ENTRY_NEW.decode(data[0..siz]) : DIR_ENTRY_ORIGINAL.decode(data[0..siz])
+      size = SIZEOF_DIR_ENTRY_NEW
+      @de  = @is_new ? DIR_ENTRY_NEW.decode(data[0..size]) : DIR_ENTRY_ORIGINAL.decode(data[0..size])
+
       # If there's a name get it.
-      @name = data[siz, @de['name_len']] if @de['name_len'] != 0
-      @inode = @de['inode_val']
-      @len = @de['entry_len']
-      @fileType = @de['file_type'] if @isNew
+      @name      = data[size, @de['name_len']] if @de['name_len'] != 0
+      @inode     = @de['inode_val']
+      @len       = @de['entry_len']
+      @file_type = @de['file_type'] if @is_new
     end
 
-    def isDir?
-      @fileType == FT_DIRECTORY
+    def dir?
+      @file_type == FT_DIRECTORY
     end
 
-    def isSymLink?
-      @fileType == FT_SYM_LNK
+    def symlink?
+      @file_type == FT_SYM_LNK
     end
 
-    def dump
-      out = "\#<#{self.class}:0x#{'%08x' % object_id}>\n"
-      out += "Inode   : #{inode}\n"
-      out += "Len     : #{len}\n"
-      out += "Name len: 0x#{'%04x' % @de['name_len']}\n"
-      out += "Type    : #{fileType}\n" if @isNew
-      out += "Name    : #{name}\n"
+    def fileTypeString
+      return "UNKNOWN"   if @file_type == FT_UNKNOWN
+      return "FILE"      if @file_type == FT_FILE
+      return "DIRECTORY" if @file_type == FT_DIRECTORY
+      return "CHAR"      if @file_type == FT_CHAR
+      return "BLOCK"     if @file_type == FT_BLOCK
+      return "FIFO"      if @file_type == FT_FIFO
+      return "SOCKET"    if @file_type == FT_SOCKET
+      return "SYMLINK"   if @file_type == FT_SYM_LNK
     end
-  end # class
-end # module
+  end # class DirectoryEntry
+end # module VirtFS::Ext3

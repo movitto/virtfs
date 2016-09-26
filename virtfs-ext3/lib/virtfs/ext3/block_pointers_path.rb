@@ -1,4 +1,4 @@
-module Ext3
+module VirtFS::Ext3
   class BlockPointersPath
     DIRECT_SIZE           = 12
     SINGLE_INDIRECT_INDEX = 12
@@ -126,5 +126,5 @@ module Ext3
         @triple_indirect_base_size + (single_indirect_index * @double_indirect_size) + (double_indirect_index * @single_indirect_size) + triple_indirect_index
       end
     end
-  end
-end
+  end # class BlockPointersPath
+end # module VirtFS::Ext3

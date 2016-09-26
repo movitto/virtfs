@@ -1,8 +1,8 @@
 require 'memory_buffer'
 
-require 'fs/ext3/block_pointers_path'
+require_relative 'block_pointers_path'
 
-module Ext3
+module VirtFS::Ext3
   class FileData
     SIZEOF_LONG           = 4
     MAX_READ              = 4294967296
@@ -17,8 +17,8 @@ module Ext3
 
       @sb         = superblock
       @inodeObj   = inodeObj
-      @blockSize  = @sb.blockSize
-      @path = BlockPointersPath.new(@blockSize / SIZEOF_LONG)
+      @block_size = @sb.block_size
+      @path = BlockPointersPath.new(@block_size / SIZEOF_LONG)
 
       rewind
     end
@@ -65,17 +65,17 @@ module Ext3
     private
 
     def getStartBlock(pos, len)
-      startBlock, startByte = pos.divmod(@blockSize)
-      endBlock, endByte = (pos + len - 1).divmod(@blockSize)
+      startBlock, startByte = pos.divmod(@block_size)
+      endBlock, endByte = (pos + len - 1).divmod(@block_size)
       nblocks = endBlock - startBlock + 1
       return startBlock, startByte, endBlock, endByte, nblocks
     end
 
     def getBlocks(startBlock, nblocks = 1)
       @path.block = startBlock
-      out = MemoryBuffer.create(nblocks * @blockSize)
+      out = MemoryBuffer.create(nblocks * @block_size)
       nblocks.times do |i|
-        out[i * @blockSize, @blockSize] = getBlock(@path)
+        out[i * @block_size, @block_size] = getBlock(@path)
         @path.succ!
       end
       out
@@ -99,7 +99,7 @@ module Ext3
                   p[path.triple_indirect_index]
                 end
 
-      @sb.getBlock(pointer)
+      @sb.get_block(pointer)
     end
 
     def getSingleIndirectPointers(block)
@@ -123,5 +123,5 @@ module Ext3
     def getBlockPointers(block)
       @sb.getBlock(block).unpack('L*')
     end
-  end # class
-end # module
+  end # class FileData
+end # module VirtFS::Ext3

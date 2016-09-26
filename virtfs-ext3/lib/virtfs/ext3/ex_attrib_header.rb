@@ -1,4 +1,4 @@
-module Ext3
+module VirtFS::Ext3
   # ////////////////////////////////////////////////////////////////////////////
   # // Data definitions.
 
@@ -10,5 +10,5 @@ module Ext3
   ]
 
   class ExAttribHeader
-  end
-end
+  end # class ExAttribHeader
+end # module VirtFS::Ext3

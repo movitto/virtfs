@@ -1,4 +1,4 @@
-module Ext3
+module VirtFS::Ext3
   # ////////////////////////////////////////////////////////////////////////////
   # // Data definitions.
 
@@ -25,5 +25,5 @@ module Ext3
       EP_READ     = 0x04  # Read permission.
     end
     include EntryPermissions
-  end
-end
+  end # class PosixActivity
+end # module VirtFS::Ext3

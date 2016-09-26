@@ -1,4 +1,4 @@
-module Ext3
+module VirtFS::Ext3
   # ////////////////////////////////////////////////////////////////////////////
   # // Data definitions.
 
@@ -7,5 +7,5 @@ module Ext3
   ]
 
   class PosixAclHeader
-  end
-end
+  end # class PosixAclHeader
+end # module VirtFS::Ext3
