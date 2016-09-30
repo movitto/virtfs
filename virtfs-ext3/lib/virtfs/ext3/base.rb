@@ -25,6 +25,10 @@ module VirtFS::Ext3
       @cache_hits  = 0
     end
 
+    def thin_interface?
+      true
+    end
+
     # Wack leading drive leter & colon.
     def unnormalize_path(p)
       p[1] == 58 ? p[2, p.size] : p

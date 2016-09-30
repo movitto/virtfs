@@ -148,7 +148,7 @@ module VirtFS::Ext3
     # /////////////////////////////////////////////////////////////////////////
     # // initialize
     attr_reader :num_groups, :fsId, :stream, :numBlocks, :numInodes, :fsId, :volName
-    attr_reader :sectorSize, :block_size
+    attr_reader :block_size
 
     @@track_inodes = false
 
@@ -190,10 +190,6 @@ module VirtFS::Ext3
       # expose for testing.
       @numBlocks = @sb['num_blocks']
       @numInodes = @sb['num_inodes']
-
-      # Inode file size members can't be trusted, so use sector count instead.
-      # MiqDisk exposes block_size, which for our purposes is sectorSize.
-      @sectorSize = @stream.block_size
 
       # Preprocess some members.
       @sb['vol_name'].delete!("\000")
