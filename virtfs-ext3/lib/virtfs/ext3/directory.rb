@@ -5,13 +5,19 @@ module VirtFS::Ext3
   class Directory
     ROOT_DIRECTORY = 2
 
-    def initialize(sb, inode_num = ROOT_DIRECTORY)
+    attr_accessor :fs
+
+    def initialize(fs, sb, inode_num = ROOT_DIRECTORY)
       raise "nil superblock"   if sb.nil?
       raise "nil inode number" if inode_num.nil?
+      @fs        = fs
       @sb        = sb
       @inode_num = inode_num
       @inode_obj = sb.get_inode(inode_num)
       @data      = sb.ext4? ? @inode_obj.read : FileData.new(@inode_obj, @sb).read
+    end
+
+    def close
     end
 
     def glob_names

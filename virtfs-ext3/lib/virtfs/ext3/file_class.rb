@@ -60,6 +60,9 @@ module VirtFS::Ext3
     end
 
     def file_lstat(p)
+      file = get_file(p)
+      raise Errno::ENOENT, "No such file or directory" if file.nil?
+      VirtFS::Stat.new(VirtFS::Ext3::File.new(file, superblock).to_h)
     end
 
     def file_mtime(p)
@@ -136,7 +139,7 @@ module VirtFS::Ext3
       def get_file(p)
         p = unnormalize_path(p)
 
-        dir, fname = File.split(p)
+        dir, fname = ::File.split(p)
 
         # Fix for FB#835: if file == root then file needs to be "."
         fname = "." if fname == "/" || fname == "\\"
@@ -144,7 +147,7 @@ module VirtFS::Ext3
         # Check for this file in the cache.
         cache_name = "#{dir == '/' ? '' : dir}/#{fname}"
         if entry_cache.key?(cache_name)
-          self.cache_hits += 1
+          #cache_hits += 1
           return entry_cache[cache_name]
         end
 
@@ -155,7 +158,7 @@ module VirtFS::Ext3
           dir_entry = nil
         end
 
-        dir_entry.inode = superblock.get_inode(dir_entry.inode) unless dir_entry.nil?
+        #dir_entry.inode = superblock.get_inode(dir_entry.inode) unless dir_entry.nil?
 
         entry_cache[cache_name] = dir_entry
       end

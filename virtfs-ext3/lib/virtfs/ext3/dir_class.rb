@@ -3,6 +3,7 @@ require 'active_support/core_ext/object/try' # until we can use the safe nav ope
 module VirtFS::Ext3
   class FS
     def dir_delete(p)
+      raise "writes not supported"
     end
 
     def dir_entries(p)
@@ -12,16 +13,24 @@ module VirtFS::Ext3
     end
 
     def dir_exist?(p)
+      begin
+        !get_dir(p).nil?
+      rescue
+        false
+      end
     end
 
     def dir_foreach(p, &block)
-      get_dir(p).try(:glob_names).try(:each, &block)
+      r = get_dir(p).try(:glob_names).try(:each, &block)
+      block.nil? ? r : nil
     end
 
     def dir_mkdir(p, permissions)
+      raise "writes not supported"
     end
 
     def dir_new(fs_rel_path, hash_args, _open_path, _cwd)
+      get_dir(fs_rel_path)
     end
 
     private
@@ -44,7 +53,7 @@ module VirtFS::Ext3
       # Check for this path in the cache.
       fname = names.join('/')
       if dir_cache.key?(fname)
-        miqfs.cache_hits += 1
+        #cache_hits += 1
         return dir_cache[fname]
       end
 
@@ -56,7 +65,7 @@ module VirtFS::Ext3
       return nil if de.nil?
       entry_cache[fname] = de
 
-      dir = Directory.new(superblock, de.inode)
+      dir = Directory.new(self, superblock, de.inode)
       return nil if dir.nil?
 
       dir_cache[fname] = dir

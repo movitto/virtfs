@@ -54,8 +54,24 @@ module VirtFS::Ext3
       @file_type == FT_DIRECTORY
     end
 
+    def file?
+      @file_type == FT_FILE
+    end
+
     def symlink?
       @file_type == FT_SYM_LNK
+    end
+
+    def atime
+      @atime ||= Time.now
+    end
+
+    def ctime
+      Time.now
+    end
+
+    def mtime
+      Time.now
     end
 
     def fileTypeString

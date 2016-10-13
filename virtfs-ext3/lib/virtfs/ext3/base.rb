@@ -2,7 +2,7 @@ module VirtFS::Ext3
   class FS
     attr_accessor :mount_point, :superblock, :root_dir
 
-    attr_accessor :entry_cache, :dir_cache, :cache_hits
+    attr_accessor :entry_cache, :dir_cache
 
     DEF_CACHE_SIZE = 50
 
@@ -19,14 +19,27 @@ module VirtFS::Ext3
     def initialize(blk_device)
       blk_device.seek(0, IO::SEEK_SET)
       @superblock  = Superblock.new(blk_device)
-      @root_dir    = Directory.new(superblock)
-      @entry_cache = LruHash.new(DEF_CACHE_SIZE)
-      @dir_cache   = LruHash.new(DEF_CACHE_SIZE)
-      @cache_hits  = 0
+      @root_dir    = Directory.new(self, superblock)
+    end
+
+    def entry_cache
+      @entry_cache ||= LruHash.new(DEF_CACHE_SIZE)
+    end
+
+    def dir_cache
+      @dir_cache ||= LruHash.new(DEF_CACHE_SIZE)
+    end
+
+    def cache_hits
+      @cache_hits ||= 0
     end
 
     def thin_interface?
       true
+    end
+
+    def umount
+      @mount_point = nil
     end
 
     # Wack leading drive leter & colon.
