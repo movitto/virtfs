@@ -1,7 +1,9 @@
 module VirtFS::Ext3
   class FS
     def file_atime(p)
-      get_file(p).try(:inode).try(:atime)
+      f = get_file(p)
+      raise Errno::ENOENT, "No such file or directory" if f.nil?
+      f.atime
     end
 
     def file_blockdev?(p)
@@ -11,20 +13,26 @@ module VirtFS::Ext3
     end
 
     def file_chmod(permission, p)
+      raise "writes not supported"
     end
 
     def file_chown(owner, group, p)
+      raise "writes not supported"
     end
 
     def file_ctime(p)
-      get_file(p).try(:inode).try(:ctime)
+      f = get_file(p)
+      raise Errno::ENOENT, "No such file or directory" if f.nil?
+      f.ctime
     end
 
     def file_delete(p)
+      raise "writes not supported"
     end
 
     def file_directory?(p)
-      get_file(p).try(:inode).try(:dir?)
+      f = get_file(p)
+      !f.nil? && f.dir?
     end
 
     def file_executable?(p)
@@ -38,7 +46,8 @@ module VirtFS::Ext3
     end
 
     def file_file?(p)
-      get_file(p).try(:inode).try(:file?)
+      f = get_file(p)
+      !f.nil? && f.file?
     end
 
     def file_ftype(p)
@@ -51,12 +60,15 @@ module VirtFS::Ext3
     end
 
     def file_lchmod(permission, p)
+      raise "writes not supported"
     end
 
     def file_lchown(owner, group, p)
+      raise "writes not supported"
     end
 
     def file_link(p1, p2)
+      raise "writes not supported"
     end
 
     def file_lstat(p)
@@ -66,7 +78,9 @@ module VirtFS::Ext3
     end
 
     def file_mtime(p)
-      get_file(p).try(:mtime)
+      f = get_file(p)
+      raise Errno::ENOENT, "No such file or directory" if f.nil?
+      f.mtime
     end
 
     def file_owned?(p)
@@ -85,6 +99,7 @@ module VirtFS::Ext3
     end
 
     def file_rename(p1, p2)
+      raise "writes not supported"
     end
 
     def file_setgid?(p)
@@ -94,7 +109,9 @@ module VirtFS::Ext3
     end
 
     def file_size(p)
-      get_file(p).try(:inode).try(:length)
+      f = get_file(p)
+      raise Errno::ENOENT, "No such file or directory" if f.nil?
+      f.try(:length)
     end
 
     def file_socket?(p)
@@ -107,6 +124,7 @@ module VirtFS::Ext3
     end
 
     def file_symlink(oname, p)
+      raise "writes not supported"
     end
 
     def file_symlink?(p)
@@ -114,6 +132,7 @@ module VirtFS::Ext3
     end
 
     def file_truncate(p, len)
+      raise "writes not supported"
     end
 
     def file_utime(atime, mtime, p)
@@ -132,6 +151,9 @@ module VirtFS::Ext3
     end
 
     def file_new(f, parsed_args, _open_path, _cwd)
+      file = get_file(f)
+      raise Errno::ENOENT, "No such file or directory" if file.nil?
+      file
     end
 
     private

@@ -46,7 +46,7 @@ module VirtFS::Ext3
       loop do
         break if p > @data.length - 4
         break if @data[p, 4].nil?
-        de = DirectoryEntry.new(@data[p..-1], new_entry)
+        de = DirectoryEntry.new(fs, @data[p..-1], new_entry)
         raise "DirectoryEntry length cannot be 0" if de.len == 0
         @ents_by_name[de.name] ||= []
         @ents_by_name[de.name] << de
@@ -62,7 +62,7 @@ module VirtFS::Ext3
       offset = 0
       # Chomp fake '.' and '..' directories first
       2.times do
-        de = DirectoryEntry.new(@data[offset..-1], @sb.new_dir_entry?)
+        de = DirectoryEntry.new(fs, @data[offset..-1], @sb.new_dir_entry?)
         ents_by_name[de.name] ||= []
         ents_by_name[de.name] << de
         offset += 12

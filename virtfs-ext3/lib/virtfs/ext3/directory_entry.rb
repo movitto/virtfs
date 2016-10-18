@@ -31,13 +31,17 @@ module VirtFS::Ext3
     FT_SOCKET     = 6
     FT_SYM_LNK    = 7
 
-    attr_reader :len, :name
+    attr_reader :fs, :len, :name
+
+    alias :size :len
 
     attr_accessor :inode, :file_type
 
-    def initialize(data, new_entry = true)
+    def initialize(fs, data, new_entry = true)
       raise "nil directory entry data" if data.nil?
       @is_new = new_entry
+
+      @fs = fs
 
       # Both entries are same size.
       size = SIZEOF_DIR_ENTRY_NEW
@@ -48,6 +52,9 @@ module VirtFS::Ext3
       @inode     = @de['inode_val']
       @len       = @de['entry_len']
       @file_type = @de['file_type'] if @is_new
+    end
+
+    def close
     end
 
     def dir?
