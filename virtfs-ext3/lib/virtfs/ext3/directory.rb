@@ -20,6 +20,14 @@ module VirtFS::Ext3
     def close
     end
 
+    def read(pos)
+      return cache[pos], pos + 1
+    end
+
+    def cache
+      @cache ||= glob_names.collect { |n| glob_entries[n].last }
+    end
+
     def glob_names
       @ent_names ||= glob_entries.keys.compact.sort
     end
