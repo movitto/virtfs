@@ -166,7 +166,7 @@ module VirtFS::Ext4
 
       # Inode file size members can't be trusted, so use sector count instead.
       # MiqDisk exposes block_size, which for our purposes is sector_size.
-      @sector_size = @stream.block_size
+      @sector_size = @sb['block_size']
 
       # Preprocess some members.
       @sb['vol_name'].delete!("\000")

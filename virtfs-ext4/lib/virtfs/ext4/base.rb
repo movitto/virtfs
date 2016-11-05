@@ -20,7 +20,7 @@ module VirtFS::Ext4
     def initialize(blk_device)
       blk_device.seek(0, IO::SEEK_SET)
       @superblock  = Superblock.new(blk_device)
-      @root_dir    = VirtFS::Ext3::Directory.new(superblock)
+      @root_dir    = VirtFS::Ext3::Directory.new(self, superblock)
       @entry_cache = LruHash.new(DEF_CACHE_SIZE)
       @dir_cache   = LruHash.new(DEF_CACHE_SIZE)
       @cache_hits  = 0
