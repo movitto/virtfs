@@ -11,6 +11,8 @@ module VirtFS
   class BlockIO
     MIN_BLOCKS_TO_CACHE = 64
 
+    attr_reader :seek_pos
+
     # BlockIO initializer
     #
     # @param io_obj [RawIO] instance of class defining #raw_read and #raw_write
